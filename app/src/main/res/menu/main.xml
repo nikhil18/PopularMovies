@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_popular"
+        android:orderInCategory="1"
+        android:title="@string/filter_popular">
+    </item>
+
+    <item
+        android:id="@+id/action_best"
+        android:orderInCategory="1"
+        android:title="@string/filter_best">
+    </item>
+
+</menu>
