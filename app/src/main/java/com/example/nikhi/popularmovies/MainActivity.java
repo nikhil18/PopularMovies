@@ -3,26 +3,18 @@ package com.example.nikhi.popularmovies;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import java.net.URL;
-import java.util.List;
-
-import api.NetworkUtils;
-import api.PopularMovieJsonUtils;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import db.Movie;
-import db.MoviesResponse;
 import adapter.MoviesAdapter;
+import AsyncTask.FetchMoviesTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,47 +37,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        FetchMoviesTask moviesTask = new FetchMoviesTask();
-        if (isNetworkConnected()) {
-            moviesTask.execute(FILTER_1);
-            noInternet.setVisibility(TextView.INVISIBLE);
-        } else {
-            noInternet.setVisibility(TextView.VISIBLE);
-        }
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
         adapter = new MoviesAdapter();
+        movieTaskPopular();
         recyclerView.setAdapter(adapter);
-    }
-
-    public static class FetchMoviesTask extends AsyncTask<String, Void, List<Movie>> {
-
-        @Override
-        protected List<Movie> doInBackground(String... params) {
-            URL moviesRequestUrl = NetworkUtils.buildUrl(BuildConfig.API_KEY, params[0]);
-
-            try {
-                String jsonMovieResponse = NetworkUtils.getResponseFromHttpUrl(moviesRequestUrl);
-                MoviesResponse moviesResponse = PopularMovieJsonUtils.parseJson(jsonMovieResponse);
-                return moviesResponse.getMovies();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-
-        }
-
-        @Override
-        protected void onPostExecute(List<Movie> movies) {
-
-            if (movies != null) {
-                Log.v(LOG_TAG, "moviesData: " + movies);
-                adapter.setMoviesData(movies);
-
-            }
-
-        }
     }
 
     @Override
@@ -100,24 +57,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         if (item.getItemId() == R.id.action_popular) {
-            FetchMoviesTask moviesTask = new FetchMoviesTask();
-            if (isNetworkConnected()) {
-                moviesTask.execute(FILTER_1);
-                noInternet.setVisibility(TextView.INVISIBLE);
-            } else {
-                noInternet.setVisibility(TextView.VISIBLE);
-            }
-
+            movieTaskPopular();
         }
 
         if (item.getItemId() == R.id.action_best) {
-            FetchMoviesTask moviesTask = new FetchMoviesTask();
-            if (isNetworkConnected()) {
-                moviesTask.execute(FILTER_2);
-                noInternet.setVisibility(TextView.INVISIBLE);
-            } else {
-                noInternet.setVisibility(TextView.VISIBLE);
-            }
+            movieTaskBest();
         }
 
         return super.onOptionsItemSelected(item);
@@ -129,6 +73,26 @@ public class MainActivity extends AppCompatActivity {
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private void movieTaskPopular() {
+        FetchMoviesTask moviesTask = new FetchMoviesTask(adapter);
+        if (isNetworkConnected()) {
+            moviesTask.execute(FILTER_1);
+            noInternet.setVisibility(TextView.INVISIBLE);
+        } else {
+            noInternet.setVisibility(TextView.VISIBLE);
+        }
+    }
+
+    private void movieTaskBest() {
+        FetchMoviesTask moviesTask = new FetchMoviesTask(adapter);
+        if (isNetworkConnected()) {
+            moviesTask.execute(FILTER_2);
+            noInternet.setVisibility(TextView.INVISIBLE);
+        } else {
+            noInternet.setVisibility(TextView.VISIBLE);
+        }
     }
 
 }
