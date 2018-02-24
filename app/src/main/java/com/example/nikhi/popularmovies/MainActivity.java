@@ -40,9 +40,6 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = MainActivity.class.getCanonicalName();
 
-    //enter your api key that you got from themoviedb.org here//
-    private static final String apiKey = "";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected List<Movie> doInBackground(String... params) {
-            URL moviesRequestUrl = NetworkUtils.buildUrl(apiKey, params[0]);
+            URL moviesRequestUrl = NetworkUtils.buildUrl(BuildConfig.API_KEY, params[0]);
 
             try {
                 String jsonMovieResponse = NetworkUtils.getResponseFromHttpUrl(moviesRequestUrl);
