@@ -11,10 +11,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import adapter.FavoritesAdapter;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import adapter.MoviesAdapter;
 import AsyncTask.FetchMoviesTask;
+import db.FavoritesCursorLoader;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,13 +26,16 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.no_internet_connection)
     TextView noInternet;
 
+
+    private MoviesAdapter moviesAdapter;
+
+    private int selectedOption = R.id.action_popular;
+
     private static final String FILTER_1 = "popular";
 
     private static final String FILTER_2 = "top_rated";
 
-    private static MoviesAdapter adapter;
-
-    private static final String LOG_TAG = MainActivity.class.getCanonicalName();
+    public static final int ID_FAVORITES_LOADER = 12;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +45,20 @@ public class MainActivity extends AppCompatActivity {
         GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
-        adapter = new MoviesAdapter();
-        movieTaskPopular();
-        recyclerView.setAdapter(adapter);
+        moviesAdapter = new MoviesAdapter();
+        if (savedInstanceState == null) {
+            movieTaskPopular();
+        } else {
+            loadAdapterPerOptionSelected(
+                    savedInstanceState.getInt("optionSelected", R.id.action_popular));
+        }
+        recyclerView.setAdapter(moviesAdapter);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("optionSelected", selectedOption);
     }
 
     @Override
@@ -55,16 +71,23 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        loadAdapterPerOptionSelected(item.getItemId());
+        return super.onOptionsItemSelected(item);
+    }
 
-        if (item.getItemId() == R.id.action_popular) {
+    public void loadAdapterPerOptionSelected(int selectedOption) {
+        this.selectedOption = selectedOption;
+
+        if (selectedOption == R.id.action_popular) {
             movieTaskPopular();
         }
 
-        if (item.getItemId() == R.id.action_best) {
+        if (selectedOption == R.id.action_best) {
             movieTaskBest();
         }
-
-        return super.onOptionsItemSelected(item);
+        if (selectedOption == R.id.action_favorites) {
+            setMovieAdapterFavorites();
+        }
 
     }
 
@@ -75,8 +98,17 @@ public class MainActivity extends AppCompatActivity {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
+    private void setMovieAdapterFavorites() {
+        FavoritesAdapter favoritesAdapter = new FavoritesAdapter();
+        recyclerView.setAdapter(favoritesAdapter);
+        getSupportLoaderManager().initLoader(
+                ID_FAVORITES_LOADER, null, new FavoritesCursorLoader(this, favoritesAdapter));
+    }
+
     private void movieTaskPopular() {
-        FetchMoviesTask moviesTask = new FetchMoviesTask(adapter);
+        moviesAdapter = new MoviesAdapter();
+        FetchMoviesTask moviesTask = new FetchMoviesTask(moviesAdapter);
+        recyclerView.setAdapter(moviesAdapter);
         if (isNetworkConnected()) {
             moviesTask.execute(FILTER_1);
             noInternet.setVisibility(TextView.INVISIBLE);
@@ -86,7 +118,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void movieTaskBest() {
-        FetchMoviesTask moviesTask = new FetchMoviesTask(adapter);
+        moviesAdapter = new MoviesAdapter();
+        FetchMoviesTask moviesTask = new FetchMoviesTask(moviesAdapter);
+        recyclerView.setAdapter(moviesAdapter);
         if (isNetworkConnected()) {
             moviesTask.execute(FILTER_2);
             noInternet.setVisibility(TextView.INVISIBLE);

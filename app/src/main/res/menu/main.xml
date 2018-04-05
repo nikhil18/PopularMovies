@@ -13,4 +13,9 @@
         android:title="@string/filter_best">
     </item>
 
+    <item
+        android:id="@+id/action_favorites"
+        android:orderInCategory="3"
+        android:title="@string/filter_favorites"/>
+
 </menu>

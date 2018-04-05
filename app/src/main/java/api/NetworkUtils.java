@@ -36,6 +36,28 @@ public class NetworkUtils {
 
     }
 
+    public static URL buildTrailersOrReviewsUrl(String apiKey, String id, String trailerOrReview){
+        Uri.Builder builder = new Uri.Builder();
+        builder.scheme("http")
+                .authority("api.themoviedb.org")
+                .appendPath("3")
+                .appendPath("movie")
+                .appendPath(id)
+                .appendPath(trailerOrReview)
+                .appendQueryParameter("api_key", apiKey);
+
+        URL url = null;
+        try {
+            url = new URL(builder.build().toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(LOG_TAG, "Built URL " + url);
+        return url;
+    }
+
+
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
@@ -57,5 +79,10 @@ public class NetworkUtils {
 
     public static String buildPosterUrl(String posterPath) {
         return "http://image.tmdb.org/t/p/w500/" + posterPath;
+    }
+
+    public static String buildYouTubeUrl(String key) {
+        String baseUrl = "https://www.youtube.com/watch?v=";
+        return baseUrl + key;
     }
 }
